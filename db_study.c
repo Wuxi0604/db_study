@@ -52,6 +52,56 @@ close_input_buffer(
     free(input_buffer);
 }
 
+meta_command_result_e 
+do_meta_command(
+  input_buffer_t* input_buffer
+) 
+{
+  if (strcmp(input_buffer->buffer, ".exit") == 0) 
+  {
+    exit(EXIT_SUCCESS);
+  } else {
+    return META_COMMAND_UNRECONGNIZED_COMMAND;
+  }
+}
+
+prepare_result_e 
+prepare_statement(
+  input_buffer_t*   input_buffer,
+  statement_t*      statement
+) 
+{
+  if (strncmp(input_buffer->buffer, "insert", 6) == 0) 
+  {
+    statement->type = STATEMENT_INSERT;
+    return PREPARE_SUCCESS;
+  }
+  if (strcmp(input_buffer->buffer, "select") == 0)
+   {
+    statement->type = STATEMENT_SELECT;
+    return PREPARE_SUCCESS;
+  }
+
+  return PREPARE_UNRECOGNIZED_STATEMENT;
+}
+
+void 
+execute_statement(
+  statement_t* statement
+) 
+{
+  switch (statement->type) 
+  {
+    case (STATEMENT_INSERT):
+      printf("This is where we would do an insert.\n");
+      break;
+    case (STATEMENT_SELECT):
+      printf("This is where we would do a select.\n");
+      break;
+  }
+}
+
+
 int main(
     int     argc, 
     char*   argv[]
@@ -63,12 +113,28 @@ int main(
     print_prompt();
     read_input(input_buffer);
 
-    if (strcmp(input_buffer->buffer, ".exit") == 0) 
+    if(input_buffer->buffer[0] == '.')
     {
-      close_input_buffer(input_buffer);
-      exit(EXIT_SUCCESS);
-    } else {
-      printf("Unrecognized command '%s'.\n", input_buffer->buffer);
+      switch(do_meta_command(input_buffer))
+      {
+        case (META_COMMAND_SUCCESS):
+          continue;
+        case (META_COMMAND_UNRECONGNIZED_COMMAND):
+          printf("Unrecognized command '%s'\n", input_buffer->buffer);
+          continue;
+      }
     }
+    statement_t statement;
+    switch(prepare_statement(input_buffer, &statement))
+    {
+      case (PREPARE_SUCCESS):
+        break;
+      case (PREPARE_UNRECOGNIZED_STATEMENT):
+        printf("Unrecognized keyword at start of '%s'.\n", input_buffer->buffer);
+        continue;
+    }
+
+    execute_statement(&statement);
+    printf("Executed.\n");
   }
 }
