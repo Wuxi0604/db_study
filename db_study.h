@@ -8,6 +8,7 @@ typedef struct input_buffer_struct  input_buffer_t;
 typedef struct statement_struct     statement_t;
 typedef struct row_struct           row_t;
 typedef struct table_struct         table_t;
+typedef struct pager_struct         pager_t;
 
 typedef enum meta_command_result_enum   meta_command_result_e;
 typedef enum prepare_result_enum        prepare_result_e;
@@ -19,9 +20,17 @@ typedef enum execute_result_enum        execute_result_e;
 
 #define TABLE_MAX_PAGES         100
 
+struct pager_struct
+{
+    int         file_descriptor;
+    uint32_t    file_length;
+    void*       pages[TABLE_MAX_PAGES];
+};
+
 struct table_struct{
   uint32_t  num_rows;
-  void*     pages[TABLE_MAX_PAGES];
+  pager_t*  pager;
+//  void*     pages[TABLE_MAX_PAGES];
 };
 
 struct row_struct
