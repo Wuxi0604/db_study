@@ -9,6 +9,8 @@ typedef struct statement_struct     statement_t;
 typedef struct row_struct           row_t;
 typedef struct table_struct         table_t;
 typedef struct pager_struct         pager_t;
+typedef struct cursor_struct        cursor_t;
+
 
 typedef enum meta_command_result_enum   meta_command_result_e;
 typedef enum prepare_result_enum        prepare_result_e;
@@ -19,6 +21,13 @@ typedef enum execute_result_enum        execute_result_e;
 #define COLUMN_EMAIL_SIZE       255
 
 #define TABLE_MAX_PAGES         100
+
+struct cursor_struct
+{
+    table_t*        table;
+    uint32_t        row_num;
+    bool            end_of_table;// Indicates a position one past the last element
+};
 
 struct pager_struct
 {
