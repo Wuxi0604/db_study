@@ -16,30 +16,18 @@ typedef enum meta_command_result_enum   meta_command_result_e;
 typedef enum prepare_result_enum        prepare_result_e;
 typedef enum statement_type_enum        statement_type_e;
 typedef enum execute_result_enum        execute_result_e;
+typedef enum node_type_enum             node_type_e;
+
 
 #define COLUMN_USERNAME_SIZE    32
 #define COLUMN_EMAIL_SIZE       255
 
 #define TABLE_MAX_PAGES         100
 
-struct cursor_struct
+enum node_type_enum
 {
-    table_t*        table;
-    uint32_t        row_num;
-    bool            end_of_table;// Indicates a position one past the last element
-};
-
-struct pager_struct
-{
-    int         file_descriptor;
-    uint32_t    file_length;
-    void*       pages[TABLE_MAX_PAGES];
-};
-
-struct table_struct{
-  uint32_t  num_rows;
-  pager_t*  pager;
-//  void*     pages[TABLE_MAX_PAGES];
+    NODE_INTERNAL,
+    NODE_LEAF
 };
 
 struct row_struct
@@ -76,6 +64,30 @@ enum execute_result_enum{
   EXECUTE_TABLE_FULL
 };
 
+struct cursor_struct
+{
+    table_t*        table;
+//    uint32_t        row_num;
+    uint32_t        page_num;
+    uint32_t        cell_num;
+    bool            end_of_table;// Indicates a position one past the last element
+};
+
+struct pager_struct
+{
+    int         file_descriptor;
+    uint32_t    file_length;
+    uint32_t    num_pages;
+    void*       pages[TABLE_MAX_PAGES];
+};
+
+struct table_struct{
+//  uint32_t  num_rows;
+  pager_t*  pager;
+  uint32_t  root_page_num;
+//  void*     pages[TABLE_MAX_PAGES];
+};
+
 struct statement_struct
 {
     statement_type_e    type;
@@ -88,6 +100,5 @@ struct input_buffer_struct
     size_t  buffer_length;
     ssize_t input_length;
 };
-
 
 #endif
