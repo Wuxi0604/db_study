@@ -812,7 +812,7 @@ leaf_node_split_and_insert(
   evenly between old (left) and new (right) nodes.
   Starting from the right, move each key to correct position.
   */
-  for(int32_t i = LEAF_NODE_MAX_CELLS; i>=0; i--)
+  for(int32_t i = LEAF_NODE_MAX_CELLS; i >= 0; i--)
   {
     void* destination_node;
     if(i >= LEAF_NODE_LEFT_SPLIT_COUNT)
@@ -839,6 +839,10 @@ leaf_node_split_and_insert(
       memcpy(destination, leaf_node_cell(old_node, i), LEAF_NODE_CELL_SIZE);
     }
   }
+
+  /* Update cell count on both leaf nodes */
+  *(leaf_node_num_cells(old_node)) = LEAF_NODE_LEFT_SPLIT_COUNT;
+  *(leaf_node_num_cells(new_node)) = LEAF_NODE_RIGHT_SPLIT_COUNT;
 
   if(is_node_root(old_node))
   {
@@ -889,7 +893,7 @@ execute_insert(
   table_t*      table
 ) 
 {
-  void* node = get_page(table->pager, table->root_page_num);
+  void*     node    = get_page(table->pager, table->root_page_num);
   // if ((*leaf_node_num_cells(node)) >= LEAF_NODE_MAX_CELLS) 
   // {
   uint32_t num_cells = (*leaf_node_num_cells(node));
