@@ -235,6 +235,8 @@ leaf_node_find(
   while (one_past_max_index != min_index)
   {
     uint32_t index        = (min_index + one_past_max_index) / 2;
+    //return key_at_index pointer
+    //返回对应位置的指针
     uint32_t key_at_index = *leaf_node_key(node, index);
     if(key == key_at_index)
     {
@@ -256,6 +258,46 @@ leaf_node_find(
 }
 
 cursor_t*
+internal_node_find(
+  table_t*    table,
+  uint32_t    page_num,
+  uint32_t    key
+)
+{
+  void*     node      = get_page(table->pager, page_num);
+  uint32_t  num_keys  = *internal_node_num_keys(node);
+
+  //binary search to find index of child to search
+  uint32_t min_index = 0;
+  uint32_t max_index = num_keys; // there is one more child than key
+
+  while (min_index != max_index)
+  {
+    uint32_t    index         = (min_index + max_index) / 2;
+    uint32_t    key_to_right  = *internal_node_key(node, index);
+
+    if(key_to_right >= key)
+    {
+      max_index = index;
+    }
+    else
+    {
+      min_index = index + 1;
+    }
+  }
+  
+  uint32_t child_num  = *internal_node_child(node, min_index);
+  void* child         = get_page(table->pager, child_num);
+  switch (get_node_type(child))
+  {
+  case NODE_LEAF:
+    return  leaf_node_find(table, child_num, key);
+  case NODE_INTERNAL:
+    return  internal_node_find(table, child_num, key);
+  }
+}
+
+cursor_t*
 table_find(
   table_t*    table,
   uint32_t    key
@@ -270,8 +312,9 @@ table_find(
   }
   else
   {
-    printf("Need to implement searching an internal node\n");
-    exit(EXIT_FAILURE);
+    // printf("Need to implement searching an internal node\n");
+    // exit(EXIT_FAILURE);
+    return internal_node_find(table, root_page_num, key);
   }
 }
 
@@ -307,7 +350,6 @@ void
 db_close(
   table_t* table
 ) 
-
 {
   pager_t* pager          = table->pager;
   //uint32_t num_full_pages = table->num_rows / ROWS_PER_PAGE;
@@ -1043,13 +1085,13 @@ int main(
     char*   argv[]
 ) 
 {
-  if(argc < 2)
-  {
-    printf("Must supply a database filename.\n");
-    exit(EXIT_FAILURE);
-  }
-  char*     filename  = argv[1];
-  //char*     filename  = "mydb.db";
+  // if(argc < 2)
+  // {
+  //   printf("Must supply a database filename.\n");
+  //   exit(EXIT_FAILURE);
+  // }
+  //char*     filename  = argv[1];
+  char*     filename  = "mydb.db";
   table_t*  table     = db_open(filename);
   input_buffer_t* input_buffer  = new_input_buffer();
   while (true) 
